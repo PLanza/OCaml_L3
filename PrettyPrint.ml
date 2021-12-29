@@ -3,8 +3,8 @@ open Interpreter;;
 
 let pp_op op = 
   match op with
-  | Plus -> "+"
-  | GTEQ -> ">="
+  | Plus -> " + "
+  | GTEQ -> " >= "
 
 let rec pp_type t = 
   match t with 
@@ -18,6 +18,7 @@ let rec pp_type t =
     let rec pp_record xs =
       (match xs with
       | [] -> ""
+      | (lab, t)::[] -> lab ^ "=" ^ (pp_type t)
       | (lab, t)::xs -> lab ^ "=" ^ (pp_type t) ^ ", " ^ (pp_record xs)
       )
     in "{" ^ (pp_record xs) ^ "}"
@@ -32,7 +33,7 @@ let rec pp_expr e =
   | If (e1, e2, e3) -> 
     "(if " ^ (pp_expr e1) ^ " then " ^ (pp_expr e2) 
       ^ " else " ^ (pp_expr e3) ^ ")"
-  | Loc l -> string_of_int l
+  | Loc l -> "l" ^ string_of_int l
   | Assign (e1, e2) -> "(" ^ (pp_expr e1) ^ ":=" ^ (pp_expr e2) ^ ")"
   | Deref e -> "!" ^ (pp_expr e)
   | Ref e -> "ref " ^(pp_expr e) 
@@ -43,11 +44,11 @@ let rec pp_expr e =
   | Fn (t, e1) -> "(fn . :" ^ (pp_type t) ^ "=>" ^ (pp_expr e1) ^ ")"
   | App (e1, e2) -> "(" ^ (pp_expr e1) ^ " " ^ (pp_expr e2) ^ ")"
   | Let (t, e1, e2) -> 
-    "let val . : " ^ (pp_type t) ^ " = " ^ (pp_expr e1) ^ " in " 
-    ^ (pp_expr e2) ^ " end "
+    "let val . : " ^ (pp_type t) ^ " = " ^ (pp_expr e1) ^ " in\n       " 
+    ^ (pp_expr e2) ^ " end\n       "
   | Letrecfn (tx, ty, e1, e2) -> 
     "let val rec . :" ^ (pp_type tx) ^ " = (fn . :" ^ (pp_type ty) ^ " => "
-    ^ (pp_expr e1) ^ ") in " ^ (pp_expr e2) ^ " end"
+    ^ (pp_expr e1) ^ ") in\n       " ^ (pp_expr e2) ^ " end\n       "
   | Product (e1, e2) -> "(" ^ (pp_expr e1) ^ "," ^ (pp_expr e2) ^ ")"
   | Fst e -> "#1 " ^ (pp_expr e)
   | Snd e -> "#2 " ^ (pp_expr e)
@@ -60,6 +61,7 @@ let rec pp_expr e =
     let rec pp_record xs =
       (match xs with
       | [] -> ""
+      | (lab, e)::[] -> lab ^ "=" ^ (pp_expr e)
       | (lab, e)::xs -> lab ^ "=" ^ (pp_expr e) ^ ", " ^ (pp_record xs)
       )
     in "{" ^ (pp_record xs) ^ "}"
@@ -96,6 +98,6 @@ let rec prettyreduce' (e, s) =
     else 
       Printf.printf "(stuck - not a value)" )
 
-let rec prettyreduce (e, s) = 
-  (Printf.printf "%s" ("     " ^ pp_config (e, s));
-    prettyreduce' (e, s) )
+let rec prettyreduce e = 
+  (Printf.printf "%s" ("     " ^ pp_config (e, []));
+    prettyreduce' (e, []) )

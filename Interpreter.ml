@@ -327,7 +327,9 @@ exception Reduce of string
       | Some (e', s') -> Some (Project (lab, e'), s')                    (* record3 *)
       | None -> None )
 
-let rec evaluate (e, s) =
+let rec evaluate' (e, s) =
   match reduce (e, s) with 
   | None -> (e, s)
-  | Some (e', s') -> evaluate (e', s')
+  | Some (e', s') -> evaluate' (e', s')
+
+let evaluate e = evaluate' (e, [])
