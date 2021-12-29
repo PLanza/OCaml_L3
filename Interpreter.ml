@@ -27,14 +27,14 @@ let rec new_ref' front s v i =
 
 let new_ref s v = new_ref' [] s v 0
 
-let rec record_lookup front back lab =
-  (match back with 
+let rec record_lookup record lab =
+  (match record with 
   | [] -> None
-  | (lab', v')::back -> 
+  | (lab', v)::record -> 
     if lab' = lab then 
-      Some (v')
+      Some (v)
     else 
-      record_lookup ((lab', v')::front) back lab
+      record_lookup record lab
   )
 
 let rec subst e n expr = 
@@ -318,7 +318,7 @@ exception Reduce of string
     if is_value e then
       (match e with
       | Record xs -> 
-        (match record_lookup [] xs lab with 
+        (match record_lookup xs lab with 
         | Some (v) -> Some (v, s)                                        (* record2*)
         | None -> None )
       | _ -> None )
